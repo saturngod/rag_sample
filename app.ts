@@ -14,7 +14,7 @@ import { MarkdownTextSplitter } from "langchain/text_splitter";
 const OLLAMA_BASE_URL = "http://localhost:11434";
 const MODEL_NAME = "llama3.2:latest"; // Use the model you have in Ollama
 const EMBED_MODEL = "granite-embedding:278m";
-const COLLECTION_NAME = "alice_wonderland";
+const COLLECTION_NAME = "alice_wonderland_book";
 const MARKDOWN_DIR = "./book"; // Directory containing markdown files
 const CHUNK_SIZE = 1000;
 const CHUNK_OVERLAP = 200;
@@ -30,62 +30,6 @@ const embeddings = new OllamaEmbeddings({
   baseUrl: OLLAMA_BASE_URL,
   model: EMBED_MODEL,
 });
-
-// Function to load and process markdown files
-async function processMarkdownFiles() {
-  console.log("Processing markdown files...");
-  
-  // Get all markdown files
-  const files = fs.readdirSync(MARKDOWN_DIR)
-    .filter(file => file.endsWith('.md'))
-    .map(file => path.join(MARKDOWN_DIR, file));
-  
-  const documents: Document[] = [];
-  
-  // Load and process each file
-  for (const file of files) {
-    const content = fs.readFileSync(file, 'utf-8');
-    const fileName = path.basename(file);
-    
-    // Create document with metadata
-    documents.push(new Document({
-      pageContent: content,
-      metadata: {
-        source: fileName,
-        filePath: file,
-      }
-    }));
-  }
-  
-  // Split documents into chunks
-  const textSplitter = new MarkdownTextSplitter({
-    chunkSize: CHUNK_SIZE,
-    chunkOverlap: CHUNK_OVERLAP,
-  });
-  
-  const splitDocs = await textSplitter.splitDocuments(documents);
-  console.log(`Split ${documents.length} documents into ${splitDocs.length} chunks`);
-  
-  return splitDocs;
-}
-
-// Function to create vector store
-async function createVectorStore(documents: Document[]) {
-  console.log("Creating vector store...");
-  
-  // Create or get the Chroma collection
-  const vectorStore = await Chroma.fromDocuments(
-    documents,
-    embeddings,
-    {
-      collectionName: COLLECTION_NAME,
-      url: "http://localhost:8000", // Default ChromaDB URL
-    }
-  );
-  
-  console.log("Vector store created successfully!");
-  return vectorStore;
-}
 
 async function getDataVectorStor() {
   const vectorStore = await Chroma.fromExistingCollection(embeddings,{
@@ -142,12 +86,9 @@ async function createRagPipeline(vectorStore: Chroma) {
 // Main function to set up the RAG system
 async function setupRag() {
   try {
-    // Process markdown files
-    const documents = await processMarkdownFiles();
     
     // Create vector store
     const vectorStore = await getDataVectorStor();
-    //const vectorStore = await createVectorStore(documents);
     
     // Create RAG pipeline
     const ragChain = await createRagPipeline(vectorStore);

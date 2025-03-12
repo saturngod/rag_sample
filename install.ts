@@ -14,7 +14,7 @@ import { MarkdownTextSplitter } from "langchain/text_splitter";
 const OLLAMA_BASE_URL = "http://localhost:11434";
 const MODEL_NAME = "llama3.2:latest"; // Use the model you have in Ollama
 const EMBED_MODEL = "granite-embedding:278m";
-const COLLECTION_NAME = "alice_wonderland";
+const COLLECTION_NAME = "alice_wonderland_book";
 const MARKDOWN_DIR = "./book"; // Directory containing markdown files
 const CHUNK_SIZE = 1000;
 const CHUNK_OVERLAP = 200;
